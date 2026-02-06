@@ -5,20 +5,15 @@ using SofiValidator;
 
 DotNetEnv.Env.TraversePath().Load();
 var apiUrl = "https://huhtamaki.cs.spheracloud.net/api/rc/flat-table/1642";
-var apiToken = Environment.GetEnvironmentVariable("KEY");
+var apiToken = Environment.GetEnvironmentVariable("KEY") ?? "No key found";
     
-    Console.WriteLine("Loading data.. Please wait...");
+Console.WriteLine("Loading data.. Please wait...");
 List<SofiRecord> records = await ReadDataFromApi(apiUrl, apiToken);
 var menuItems = new Dictionary<int, MenuItem>
 {
     { 1, new MenuItem("Print data", PrintData) },
     { 2, new MenuItem("Exit", () => Environment.Exit(0) )}
 };
-
-
-
-    
-    
 
 while (true)
 {
