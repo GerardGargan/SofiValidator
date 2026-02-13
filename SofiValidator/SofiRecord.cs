@@ -6,10 +6,10 @@ public class SofiRecord
     [Name("Position")] public string Position { get; set; } = String.Empty;
 
     [Name("Position ID")]
-    public int PositionID { get; set; }
+    public int PositionId { get; set; }
 
     [Name("Site ID")]
-    public int SiteID { get; set; }
+    public int SiteId { get; set; }
 
     [Name("Site")]
     public string Site { get; set; } = String.Empty;
@@ -33,19 +33,20 @@ public class SofiRecord
     public string FilterByCustomFieldName { get; set; } = String.Empty;
 
     [Name("Value")]
-    public string Value { get; set; } = String.Empty;
+    [Default(0)]
+    public double Value { get; set; }
 
     [Name("estimated")]
     public bool Estimated { get; set; }
 
     [Name("Calculated Time (UTC)")]
-    public DateTime CalculatedTimeUTC { get; set; }
+    public DateTime CalculatedTimeUtc { get; set; }
 
     [Name("Site Type")]
     public string SiteType { get; set; } = String.Empty;
 
     public override string ToString()
     {
-        return $"{Position} - {PositionID} - {SiteType} - {SitePath}";
+        return $"{Position, -50} - {Value, -12} - {TermStart.ToUniversalTime()}";
     }
 }

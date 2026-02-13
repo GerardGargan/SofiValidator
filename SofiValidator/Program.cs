@@ -1,18 +1,36 @@
 ﻿using System.Globalization;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using CsvHelper;
 using SofiValidator;
 
 DotNetEnv.Env.TraversePath().Load();
-var apiUrl = "https://huhtamaki.cs.spheracloud.net/api/rc/flat-table/1642";
-var apiToken = Environment.GetEnvironmentVariable("KEY") ?? "No key found";
+var apiUrl = "https://huhtamaki.cs.spheracloud.net/api/rc/flat-table/2127";
+var apiToken = Environment.GetEnvironmentVariable("KEY") ?? throw new Exception("API Key not found");
     
 Console.WriteLine("Loading data.. Please wait...");
-List<SofiRecord> records = await ReadDataFromApi(apiUrl, apiToken);
+var records = await ReadDataFromApi(apiUrl, apiToken);
+
+static DateTime MonthKey(DateTime dt) => new(dt.Year, dt.Month, 1);
+
+var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
+var prevMonth1 = currentMonth.AddMonths(-1);
+var prevMonth2 = currentMonth.AddMonths(-2);
+
+var recordIndex = records.ToDictionary(
+    r => (r.SiteId, r.PositionId, Month: MonthKey(r.TermStart)), 
+    r => r
+    );
+
+var currentMonthSofiRecords = records.Where(x => MonthKey(x.TermStart) == MonthKey(currentMonth))
+    .ToList();
+
 var menuItems = new Dictionary<int, MenuItem>
 {
-    { 1, new MenuItem("Print data", PrintData) },
-    { 2, new MenuItem("Exit", () => Environment.Exit(0) )}
+    { 1, new MenuItem("Display TRI Breakdown for current month", PrintTris)},
+    { 2, new MenuItem("Display Missing Working Hrs for current month", PrintMissingWorkingHrs)},
+    { 3, new MenuItem("Clear Console", Console.Clear)},
+    { 4, new MenuItem("Exit", () => Environment.Exit(0))}
 };
 
 while (true)
@@ -40,6 +58,7 @@ static int ReadMenuOption(Dictionary<int, MenuItem> menuItems)
         var input = Console.ReadLine();
         if (int.TryParse(input, out var option) && menuItems.ContainsKey(option))
         {
+            Console.WriteLine();
             return option;
         }
         Console.WriteLine($"Invalid option: {input}");
@@ -56,6 +75,52 @@ static async Task<List<SofiRecord>> ReadDataFromApi(string apiUrl, string apiTok
     var records = csv.GetRecords<SofiRecord>().ToList();
 
     return records;
+}
+
+
+void PrintTris()
+{
+    var ltiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.LtiEmployee || x.PositionId == Position.LtiContingent) & x.Value > 0);
+    var mtiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.MtiEmployee || x.PositionId == Position.MtiContingent) & x.Value > 0);
+
+    Console.WriteLine($"{"Site", -40} {"LTIs", -5}");
+    foreach (var r in ltiRecords)
+    {
+        Console.WriteLine($"{r.Site, -40} {r.Value, 5}");
+    }
+    
+    Console.WriteLine();
+    Console.WriteLine($"{"Site", -40} {"MTIs", -4}");
+    foreach (var r in mtiRecords)
+    {
+        Console.WriteLine($"{r.Site, -40} {r.Value, 4}");
+    }
+}
+
+void PrintMissingWorkingHrs()
+{
+    var missingHuhtamakiWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.HuhtamakiWorkingHrs & x.Value == 0);
+    var missingContingentWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.ContingentWorkingHrs & x.Value == 0);
+
+    Console.WriteLine($"Huhtamaki Employee working hrs - Displaying any sites that have 0 hrs for the current month");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -50} ");
+    foreach (var r in missingHuhtamakiWorkingHrsRecords)
+    {
+        recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
+        recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+    }
+    
+    Console.WriteLine();
+    
+    Console.WriteLine($"Contingent working hrs - Displaying any sites that have 0 hrs for the current month");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -50} ");
+    foreach (var r in missingContingentWorkingHrsRecords)
+    {
+        recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
+        recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+    }
 }
 
 void PrintData()

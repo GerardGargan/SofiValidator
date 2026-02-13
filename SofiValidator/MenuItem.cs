@@ -1,3 +1,4 @@
+namespace SofiValidator;
 public class MenuItem(string name, Action action)
 {
     public string Name { get; set; } = name;
