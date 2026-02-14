@@ -101,26 +101,26 @@ void PrintMissingWorkingHrs()
     var missingHuhtamakiWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.HuhtamakiWorkingHrs & x.Value == 0);
     var missingContingentWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.ContingentWorkingHrs & x.Value == 0);
 
-    Console.WriteLine($"Huhtamaki Employee working hrs - Displaying any sites that have 0 hrs for the current month");
-    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -50} ");
+    Console.WriteLine($"Huhtamaki Employee working hrs - Displaying any sites that have 0 hrs in the current month, and have recorded more than 0 hrs in the previous 2 months");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -20} {MonthKey(prevMonth1).ToShortDateString(), -20} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -20} ");
     foreach (var r in missingHuhtamakiWorkingHrsRecords)
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
         if (prevMonth1Value?.Value == 0 && prevMonth2Value?.Value == 0) continue;
-        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -20} {prevMonth1Value?.Value, -20} {r.Value, -20}");
     }
     
     Console.WriteLine();
     
-    Console.WriteLine($"Contingent working hrs - Displaying any sites that have 0 hrs for the current month");
-    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -50} ");
+    Console.WriteLine($"Contingent working hrs - Displaying any sites that have 0 hrs in the current month, and have recorded more than 0 hrs in the previous 2 months");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -20} {MonthKey(prevMonth1).ToShortDateString(), -20} {$"Current Month ({MonthKey(currentMonth).ToShortDateString()})", -20} ");
     foreach (var r in missingContingentWorkingHrsRecords)
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
         if (prevMonth1Value?.Value == 0 && prevMonth2Value?.Value == 0) continue;
-        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -20} {prevMonth1Value?.Value, -20} {r.Value, -20}");
     }
 }
 
@@ -131,13 +131,13 @@ void PrintLtiAndLthMonthly()
     var currentMonthContingentRecordsWithLth =currentMonthSofiRecords.Where(x => x.PositionId == Position.LostTimeHrsContingent & x.Value > 0);
     
     Console.WriteLine($"Employee LTH - Displaying any sites that have recorded hrs for the current month & showing past months");
-    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current month ({MonthKey(currentMonth).ToShortDateString()})", -50}");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -20} {MonthKey(prevMonth1).ToShortDateString(), -20} {$"Current month ({MonthKey(currentMonth).ToShortDateString()})", -20}");
     foreach (var r in currentMonthEmployeeRecordsWithLth)
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
         
-        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -20} {prevMonth1Value?.Value, -20} {r.Value, -20}");
     }
     
     Console.WriteLine();
@@ -146,6 +146,6 @@ void PrintLtiAndLthMonthly()
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
-        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
+        Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -20} {prevMonth1Value?.Value, -20} {r.Value, -20}");
     }
 }
