@@ -107,6 +107,7 @@ void PrintMissingWorkingHrs()
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
+        if (prevMonth1Value?.Value == 0 && prevMonth2Value?.Value == 0) continue;
         Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
     }
     
@@ -118,6 +119,7 @@ void PrintMissingWorkingHrs()
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
+        if (prevMonth1Value?.Value == 0 && prevMonth2Value?.Value == 0) continue;
         Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
     }
 }
@@ -129,7 +131,7 @@ void PrintLtiAndLthMonthly()
     var currentMonthContingentRecordsWithLth =currentMonthSofiRecords.Where(x => x.PositionId == Position.LostTimeHrsContingent & x.Value > 0);
     
     Console.WriteLine($"Employee LTH - Displaying any sites that have recorded hrs for the current month & showing past months");
-    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current month ({MonthKey(currentMonth).ToShortDateString()})", 50}");
+    Console.WriteLine($"{"Site", -40} {MonthKey(prevMonth2).ToShortDateString(), -50} {MonthKey(prevMonth1).ToShortDateString(), -50} {$"Current month ({MonthKey(currentMonth).ToShortDateString()})", -50}");
     foreach (var r in currentMonthEmployeeRecordsWithLth)
     {
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth1)), out var prevMonth1Value);
@@ -146,5 +148,4 @@ void PrintLtiAndLthMonthly()
         recordIndex.TryGetValue((r.SiteId, r.PositionId, MonthKey(prevMonth2)), out var prevMonth2Value);
         Console.WriteLine($"{r.Site, -40} {prevMonth2Value?.Value, -50} {prevMonth1Value?.Value, -50} {r.Value, -50}");
     }
-
 }
