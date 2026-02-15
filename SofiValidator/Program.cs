@@ -29,8 +29,9 @@ var menuItems = new Dictionary<int, MenuItem>
     { 1, new MenuItem("Display TRI Breakdown for current month", PrintTris)},
     { 2, new MenuItem("Display Missing Working Hrs for current month", PrintMissingWorkingHrs)},
     { 3, new MenuItem("Display LTH Analysis", PrintLtiAndLthMonthly)},
-    { 4, new MenuItem("Clear Console", Console.Clear)},
-    { 5, new MenuItem("Exit", () => Environment.Exit(0))}
+    { 4, new MenuItem("Lti Information", PrintLtiInformation)},
+    { 5, new MenuItem("Clear Console", Console.Clear)},
+    { 6, new MenuItem("Exit", () => Environment.Exit(0))}
 };
 
 while (true)
@@ -160,5 +161,49 @@ void PrintLtiAndLthMonthly()
         recordIndex.TryGetValue((r.SiteId, Position.LtiContingent, MonthKey(prevMonth1)), out var prevMonth1Lti);
         recordIndex.TryGetValue((r.SiteId, Position.LtiContingent, MonthKey(prevMonth2)), out var prevMonth2Lti);
         Console.WriteLine($"{r.Site, -40} {prevMonth2Lti?.Value, -8}{prevMonth2Value?.Value, -12} {prevMonth1Lti?.Value, -8}{prevMonth1Value?.Value, -12} {currentMonthLti?.Value, -8}{r.Value, -12}");
+    }
+}
+
+void PrintLtiInformation()
+{
+    Console.WriteLine($"Lti Information");
+    var siteIds = currentMonthSofiRecords.Select(x => x.SiteId).ToHashSet();
+
+    Console.WriteLine($"{"Site", -40} {"LTI Total", -10} {"Class (duration) Of Lti", -25} {"Cause of LTI", -15} {"Type Of Injury", -20} {"Injured Body Part", -20} {"Age Group", -10} {"Location", -10} {"Service Age", -15} {"Shift Type", -15}");
+    foreach (var siteId in siteIds)
+    {
+        recordIndex.TryGetValue((siteId, Position.LtiEmployee, MonthKey(currentMonth)), out var ltiEmployee);
+        recordIndex.TryGetValue((siteId, Position.LtiContingent, MonthKey(currentMonth)), out var ltiContingent);
+        var totalLti = (ltiEmployee?.Value ?? 0) + (ltiContingent?.Value ?? 0);
+        
+        recordIndex.TryGetValue((siteId, Position.DurationOfLti, MonthKey(currentMonth)), out var durationOfLti);
+        recordIndex.TryGetValue((siteId, Position.CauseOfLti, MonthKey(currentMonth)), out var causeOfLti);
+        recordIndex.TryGetValue((siteId, Position.TypeOfInjuryLti, MonthKey(currentMonth)), out var typeOfInjury);
+        recordIndex.TryGetValue((siteId, Position.InjuredBodyPartLti, MonthKey(currentMonth)), out var injuredBodyPartLti);
+        recordIndex.TryGetValue((siteId, Position.AgeGroupLti, MonthKey(currentMonth)), out var ageGroupLti);
+        recordIndex.TryGetValue((siteId, Position.LocationLti, MonthKey(currentMonth)), out var locationLti);
+        recordIndex.TryGetValue((siteId, Position.ServiceAgeLti, MonthKey(currentMonth)), out var serviceAgeLti);
+        recordIndex.TryGetValue((siteId, Position.ShiftTypeLti, MonthKey(currentMonth)), out var shiftTypeLti);
+        var siteName = ltiEmployee?.Site;
+        
+        var totalInfoAdded = new[] { durationOfLti, causeOfLti, typeOfInjury, injuredBodyPartLti,
+                ageGroupLti, locationLti, serviceAgeLti, shiftTypeLti }
+            .Sum(x => x?.Value ?? 0);
+        const double epsilon = 1e-9;
+        var isValid = Math.Abs(totalInfoAdded - (totalLti * 8.0)) < epsilon;
+
+        if (!isValid)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else if (isValid && totalLti > 0)
+        {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+        }
+
+        Console.WriteLine($"{siteName, -40} {totalLti, -10} {durationOfLti?.Value, -25} {causeOfLti?.Value, -15} {typeOfInjury?.Value, -20} {injuredBodyPartLti?.Value, -20} {ageGroupLti?.Value, -10} {locationLti?.Value, -10} {serviceAgeLti?.Value, -15} {shiftTypeLti?.Value, -15}");
+        Console.ResetColor();
     }
 }

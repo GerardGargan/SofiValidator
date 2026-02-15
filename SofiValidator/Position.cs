@@ -15,4 +15,14 @@ public static class Position
     // Lost time hrs (LTI)
     public const int LostTimeHrsEmployee = 248;
     public const int LostTimeHrsContingent = 644;
+    
+    // LTI Info
+    public const int DurationOfLti = 483;
+    public const int CauseOfLti = 488;
+    public const int TypeOfInjuryLti = 508;
+    public const int InjuredBodyPartLti = 1103;
+    public const int AgeGroupLti = 540;
+    public const int LocationLti = 530;
+    public const int ServiceAgeLti = 550;
+    public const int ShiftTypeLti = 1019;
 }
