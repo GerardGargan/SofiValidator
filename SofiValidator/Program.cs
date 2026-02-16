@@ -29,9 +29,10 @@ var menuItems = new Dictionary<int, MenuItem>
     { 1, new MenuItem("Display TRI Breakdown for current month", PrintTris)},
     { 2, new MenuItem("Display Missing Working Hrs for current month", PrintMissingWorkingHrs)},
     { 3, new MenuItem("Display LTH Analysis", PrintLtiAndLthMonthly)},
-    { 4, new MenuItem("Lti Information", PrintLtiInformation)},
-    { 5, new MenuItem("Clear Console", Console.Clear)},
-    { 6, new MenuItem("Exit", () => Environment.Exit(0))}
+    { 4, new MenuItem("LTI Information", PrintLtiInformation)},
+    { 5, new MenuItem("MTI Information", PrintMtiInformation)},
+    { 6, new MenuItem("Clear Console", Console.Clear)},
+    { 7, new MenuItem("Exit", () => Environment.Exit(0))}
 };
 
 while (true)
@@ -214,6 +215,49 @@ void PrintLtiInformation()
         }
 
         Console.WriteLine($"{siteName, -40} {totalLti, -10} {durationOfLti?.Value, -25} {causeOfLti?.Value, -15} {typeOfInjury?.Value, -20} {injuredBodyPartLti?.Value, -20} {ageGroupLti?.Value, -10} {locationLti?.Value, -10} {serviceAgeLti?.Value, -15} {shiftTypeLti?.Value, -15}");
+        Console.ResetColor();
+    }
+}
+
+void PrintMtiInformation()
+{
+    Console.WriteLine($"Mti Information");
+    var siteIds = currentMonthSofiRecords.Select(x => x.SiteId).ToHashSet();
+
+    Console.WriteLine($"{"Site", -40} {"Mti Total", -10} {"Cause of Mti", -15} {"Type Of Injury", -20} {"Injured Body Part", -20} {"Age Group", -10} {"Location", -10} {"Service Age", -15} {"Shift Type", -15}");
+    foreach (var siteId in siteIds)
+    {
+        recordIndex.TryGetValue((siteId, Position.MtiEmployee, MonthKey(currentMonth)), out var mtiEmployee);
+        recordIndex.TryGetValue((siteId, Position.MtiContingent, MonthKey(currentMonth)), out var mtiContingent);
+        var totalMti = (mtiEmployee?.Value ?? 0) + (mtiContingent?.Value ?? 0);
+        
+        recordIndex.TryGetValue((siteId, Position.CauseOfMti, MonthKey(currentMonth)), out var causeOfMti);
+        recordIndex.TryGetValue((siteId, Position.TypeOfInjuryMti, MonthKey(currentMonth)), out var typeOfInjury);
+        recordIndex.TryGetValue((siteId, Position.InjuredBodyPartMti, MonthKey(currentMonth)), out var injuredBodyPartMti);
+        recordIndex.TryGetValue((siteId, Position.AgeGroupMti, MonthKey(currentMonth)), out var ageGroupMti);
+        recordIndex.TryGetValue((siteId, Position.LocationMti, MonthKey(currentMonth)), out var locationMti);
+        recordIndex.TryGetValue((siteId, Position.ServiceAgeMti, MonthKey(currentMonth)), out var serviceAgeMti);
+        recordIndex.TryGetValue((siteId, Position.ShiftTypeMti, MonthKey(currentMonth)), out var shiftTypeMti);
+        var siteName = mtiEmployee?.Site;
+        
+        var totalInfoAdded = new[] { causeOfMti, typeOfInjury, injuredBodyPartMti,
+                ageGroupMti, locationMti, serviceAgeMti, shiftTypeMti }
+            .Sum(x => x?.Value ?? 0);
+        const double epsilon = 1e-9;
+        var isValid = Math.Abs(totalInfoAdded - (totalMti * 7.0)) < epsilon;
+
+        if (!isValid)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else if (isValid && totalMti > 0)
+        {
+            Console.BackgroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.Black;
+        }
+
+        Console.WriteLine($"{siteName, -40} {totalMti, -10} {causeOfMti?.Value, -15} {typeOfInjury?.Value, -20} {injuredBodyPartMti?.Value, -20} {ageGroupMti?.Value, -10} {locationMti?.Value, -10} {serviceAgeMti?.Value, -15} {shiftTypeMti?.Value, -15}");
         Console.ResetColor();
     }
 }

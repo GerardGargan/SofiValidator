@@ -25,4 +25,13 @@ public static class Position
     public const int LocationLti = 530;
     public const int ServiceAgeLti = 550;
     public const int ShiftTypeLti = 1019;
+    
+    // LTI Info
+    public const int CauseOfMti = 968;
+    public const int TypeOfInjuryMti = 988;
+    public const int InjuredBodyPartMti = 1093;
+    public const int AgeGroupMti = 653;
+    public const int LocationMti = 1009;
+    public const int ServiceAgeMti = 661;
+    public const int ShiftTypeMti = 646;
 }
