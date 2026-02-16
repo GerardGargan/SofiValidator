@@ -82,21 +82,31 @@ static async Task<List<SofiRecord>> ReadDataFromApi(string apiUrl, string apiTok
 
 void PrintTris()
 {
-    var ltiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.LtiEmployee || x.PositionId == Position.LtiContingent) & x.Value > 0);
-    var mtiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.MtiEmployee || x.PositionId == Position.MtiContingent) & x.Value > 0);
-
+    var ltiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.LtiEmployee || x.PositionId == Position.LtiContingent) & x.Value > 0).ToList();
+    var mtiRecords = currentMonthSofiRecords.Where(x => (x.PositionId == Position.MtiEmployee || x.PositionId == Position.MtiContingent) & x.Value > 0).ToList();
+    
+    var ltiTotal = ltiRecords.Select(x => x.Value).Sum();
+    var mtiTotal = mtiRecords.Select(x => x.Value).Sum();
+    
     Console.WriteLine($"{"Site", -40} {"LTIs", -5}");
     foreach (var r in ltiRecords)
     {
         Console.WriteLine($"{r.Site, -40} {r.Value, 5}");
     }
+    Console.WriteLine($"{"Total", -40} {ltiTotal, 5}");
     
     Console.WriteLine();
-    Console.WriteLine($"{"Site", -40} {"MTIs", -4}");
+    Console.WriteLine($"{"Site", -40} {"MTIs", -5}");
     foreach (var r in mtiRecords)
     {
-        Console.WriteLine($"{r.Site, -40} {r.Value, 4}");
+        Console.WriteLine($"{r.Site, -40} {r.Value, 5}");
     }
+
+    Console.WriteLine();
+    Console.WriteLine($"{"Total LTIs", -40} {mtiTotal, 5}");
+    Console.WriteLine($"{"Total MTIs", -40} {ltiTotal, 5}");
+    Console.WriteLine($"{"Total TRIs", -40} {ltiTotal + mtiTotal, 5}");
+
 }
 
 void PrintMissingWorkingHrs()
