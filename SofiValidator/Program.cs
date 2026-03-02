@@ -12,7 +12,7 @@ var records = await ReadDataFromApi(apiUrl, apiToken);
 
 static DateTime MonthKey(DateTime dt) => new(dt.Year, dt.Month, 1);
 
-var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
+var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-2);
 var prevMonth1 = currentMonth.AddMonths(-1);
 var prevMonth2 = currentMonth.AddMonths(-2);
 
@@ -31,8 +31,9 @@ var menuItems = new Dictionary<int, MenuItem>
     { 3, new MenuItem("Display LTH Analysis", PrintLtiAndLthMonthly)},
     { 4, new MenuItem("LTI Information", PrintLtiInformation)},
     { 5, new MenuItem("MTI Information", PrintMtiInformation)},
-    { 6, new MenuItem("Clear Console", Console.Clear)},
-    { 7, new MenuItem("Exit", () => Environment.Exit(0))}
+    { 6, new MenuItem("Injury Ratings", PrintInjuryRatings)},
+    { 7, new MenuItem("Clear Console", Console.Clear)},
+    { 8, new MenuItem("Exit", () => Environment.Exit(0))}
 };
 
 while (true)
@@ -200,8 +201,7 @@ void PrintLtiInformation()
         var totalInfoAdded = new[] { durationOfLti, causeOfLti, typeOfInjury, injuredBodyPartLti,
                 ageGroupLti, locationLti, serviceAgeLti, shiftTypeLti }
             .Sum(x => x?.Value ?? 0);
-        const double epsilon = 1e-9;
-        var isValid = Math.Abs(totalInfoAdded - (totalLti * 8.0)) < epsilon;
+        var isValid = Math.Abs(totalInfoAdded - (totalLti * 8.0m)) == 0;
 
         if (!isValid)
         {
@@ -230,21 +230,24 @@ void PrintMtiInformation()
         recordIndex.TryGetValue((siteId, Position.MtiEmployee, MonthKey(currentMonth)), out var mtiEmployee);
         recordIndex.TryGetValue((siteId, Position.MtiContingent, MonthKey(currentMonth)), out var mtiContingent);
         var totalMti = (mtiEmployee?.Value ?? 0) + (mtiContingent?.Value ?? 0);
-        
+
         recordIndex.TryGetValue((siteId, Position.CauseOfMti, MonthKey(currentMonth)), out var causeOfMti);
         recordIndex.TryGetValue((siteId, Position.TypeOfInjuryMti, MonthKey(currentMonth)), out var typeOfInjury);
-        recordIndex.TryGetValue((siteId, Position.InjuredBodyPartMti, MonthKey(currentMonth)), out var injuredBodyPartMti);
+        recordIndex.TryGetValue((siteId, Position.InjuredBodyPartMti, MonthKey(currentMonth)),
+            out var injuredBodyPartMti);
         recordIndex.TryGetValue((siteId, Position.AgeGroupMti, MonthKey(currentMonth)), out var ageGroupMti);
         recordIndex.TryGetValue((siteId, Position.LocationMti, MonthKey(currentMonth)), out var locationMti);
         recordIndex.TryGetValue((siteId, Position.ServiceAgeMti, MonthKey(currentMonth)), out var serviceAgeMti);
         recordIndex.TryGetValue((siteId, Position.ShiftTypeMti, MonthKey(currentMonth)), out var shiftTypeMti);
         var siteName = mtiEmployee?.Site;
-        
-        var totalInfoAdded = new[] { causeOfMti, typeOfInjury, injuredBodyPartMti,
-                ageGroupMti, locationMti, serviceAgeMti, shiftTypeMti }
+
+        var totalInfoAdded = new[]
+            {
+                causeOfMti, typeOfInjury, injuredBodyPartMti,
+                ageGroupMti, locationMti, serviceAgeMti, shiftTypeMti
+            }
             .Sum(x => x?.Value ?? 0);
-        const double epsilon = 1e-9;
-        var isValid = Math.Abs(totalInfoAdded - (totalMti * 7.0)) < epsilon;
+        var isValid = Math.Abs(totalInfoAdded - (totalMti * 7.0m)) == 0;
 
         if (!isValid)
         {
@@ -257,7 +260,52 @@ void PrintMtiInformation()
             Console.ForegroundColor = ConsoleColor.Black;
         }
 
-        Console.WriteLine($"{siteName, -40} {totalMti, -10} {causeOfMti?.Value, -15} {typeOfInjury?.Value, -20} {injuredBodyPartMti?.Value, -20} {ageGroupMti?.Value, -10} {locationMti?.Value, -10} {serviceAgeMti?.Value, -15} {shiftTypeMti?.Value, -15}");
+        Console.WriteLine(
+            $"{siteName,-40} {totalMti,-10} {causeOfMti?.Value,-15} {typeOfInjury?.Value,-20} {injuredBodyPartMti?.Value,-20} {ageGroupMti?.Value,-10} {locationMti?.Value,-10} {serviceAgeMti?.Value,-15} {shiftTypeMti?.Value,-15}");
         Console.ResetColor();
     }
 }
+
+void PrintInjuryRatings()
+    {
+        var siteNameLookup = currentMonthSofiRecords.DistinctBy(x => x.SiteId).ToDictionary(x => x.SiteId, x => x.Site);
+        
+        Console.WriteLine($"{"Site", -40} {"# LTI", -7} {"Actual LTI Ratings", -20} {"Potential LTI Ratings", -25} | {"# MTI", -7} {"Actual MTI Ratings", -20} {"Potential MTI Ratings", -25} | {"# Total", -8} {"Actual FAI Ratings", -20} {"Potential FAI Ratings", -23}");
+
+        foreach (var siteId in siteNameLookup.Keys)
+        {
+            bool siteNameFound = siteNameLookup.TryGetValue(siteId, out var siteName);
+            siteName = siteNameFound ? siteName : "";
+            var totalLti = GetSitePositionValue(siteId, Position.LtiContingent, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.LtiEmployee, MonthKey(currentMonth));
+            var totalMti = GetSitePositionValue(siteId, Position.MtiContingent, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.MtiEmployee, MonthKey(currentMonth));
+            var totalFai = GetSitePositionValue(siteId, Position.FaiTotal, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.LtiEmployee, MonthKey(currentMonth));
+            
+            var actualLtiRatings = GetSitePositionValue(siteId, Position.ActualRatingsLti, MonthKey(currentMonth));
+            var actualMtiRatings = GetSitePositionValue(siteId, Position.ActualRatingsMti, MonthKey(currentMonth));
+            var actualFaiRatings = GetSitePositionValue(siteId, Position.ActualRatingsFai, MonthKey(currentMonth));
+            
+            var potentialLtiRatings = GetSitePositionValue(siteId, Position.PotentialRatingsLti, MonthKey(currentMonth));
+            var potentialMtiRatings = GetSitePositionValue(siteId, Position.PotentialRatingsMti, MonthKey(currentMonth));
+            var potentialFaiRatings = GetSitePositionValue(siteId, Position.PotentialRatingsFai, MonthKey(currentMonth));
+
+            var isLtiMatchingRatings = (totalLti * 2) == (actualLtiRatings + potentialLtiRatings);
+            var isMtiMatchingRatings = (totalMti * 2) ==  (actualMtiRatings + potentialMtiRatings);
+            var isFaiMatchingRatings =  (totalFai * 2) == (actualFaiRatings + potentialFaiRatings);
+            var isValid = isLtiMatchingRatings && isMtiMatchingRatings && isFaiMatchingRatings;
+            
+            if (!isValid)
+            {
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.White;
+            } 
+            Console.WriteLine($"{siteName, -40} {totalLti, -7
+            } {actualLtiRatings, -20} {potentialLtiRatings, -25} | {totalMti, -7} {actualMtiRatings, -20} {potentialMtiRatings, -25} | {totalFai, -8} {actualFaiRatings, -20} {potentialFaiRatings, -23}");
+            Console.ResetColor();
+        }
+    }
+    
+    decimal GetSitePositionValue(int siteId, int position, DateTime month)
+    {
+        var found = recordIndex.TryGetValue((siteId, position, MonthKey(month)), out var val);
+        return val?.Value ?? 0;
+    }

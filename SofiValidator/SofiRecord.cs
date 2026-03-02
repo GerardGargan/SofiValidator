@@ -34,7 +34,7 @@ public class SofiRecord
 
     [Name("Value")]
     [Default(0)]
-    public double Value { get; set; }
+    public decimal Value { get; set; }
 
     [Name("estimated")]
     public bool Estimated { get; set; }

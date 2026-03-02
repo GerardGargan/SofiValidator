@@ -7,6 +7,9 @@ public static class Position
     public const int LtiContingent = 399;
     public const int MtiEmployee = 237;
     public const int MtiContingent = 818;
+    
+    // FAI
+    public const int FaiTotal = 827;
 
     // Working hrs
     public const int HuhtamakiWorkingHrs = 734;
@@ -26,7 +29,7 @@ public static class Position
     public const int ServiceAgeLti = 550;
     public const int ShiftTypeLti = 1019;
     
-    // LTI Info
+    // MTI Info
     public const int CauseOfMti = 968;
     public const int TypeOfInjuryMti = 988;
     public const int InjuredBodyPartMti = 1093;
@@ -34,4 +37,13 @@ public static class Position
     public const int LocationMti = 1009;
     public const int ServiceAgeMti = 661;
     public const int ShiftTypeMti = 646;
+    
+    // Injury Ratings
+    public const int ActualRatingsLti = 1024;
+    public const int ActualRatingsMti = 1025;
+    public const int ActualRatingsFai = 1027;
+    
+    public const int PotentialRatingsLti = 1026;
+    public const int PotentialRatingsMti = 1028;
+    public const int PotentialRatingsFai = 1029;
 }
