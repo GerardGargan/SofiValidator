@@ -12,7 +12,7 @@ var records = await ReadDataFromApi(apiUrl, apiToken);
 
 static DateTime MonthKey(DateTime dt) => new(dt.Year, dt.Month, 1);
 
-var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-2);
+var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
 var prevMonth1 = currentMonth.AddMonths(-1);
 var prevMonth2 = currentMonth.AddMonths(-2);
 
