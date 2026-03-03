@@ -270,7 +270,7 @@ void PrintInjuryRatings()
     {
         var siteNameLookup = currentMonthSofiRecords.DistinctBy(x => x.SiteId).ToDictionary(x => x.SiteId, x => x.Site);
         
-        Console.WriteLine($"{"Site", -40} {"# LTI", -7} {"Actual LTI Ratings", -20} {"Potential LTI Ratings", -25} | {"# MTI", -7} {"Actual MTI Ratings", -20} {"Potential MTI Ratings", -25} | {"# Total", -8} {"Actual FAI Ratings", -20} {"Potential FAI Ratings", -23}");
+        Console.WriteLine($"{"Site", -40} {"# LTI", -7} {"Actual LTI Ratings", -20} {"Potential LTI Ratings", -25} {"# MTI", -7} {"Actual MTI Ratings", -20} {"Potential MTI Ratings", -25} {"# FAI", -5} {"Actual FAI Ratings", -20} {"Potential FAI Ratings", -23}");
 
         foreach (var siteId in siteNameLookup.Keys)
         {
@@ -299,7 +299,7 @@ void PrintInjuryRatings()
                 Console.ForegroundColor = ConsoleColor.White;
             } 
             Console.WriteLine($"{siteName, -40} {totalLti, -7
-            } {actualLtiRatings, -20} {potentialLtiRatings, -25} | {totalMti, -7} {actualMtiRatings, -20} {potentialMtiRatings, -25} | {totalFai, -8} {actualFaiRatings, -20} {potentialFaiRatings, -23}");
+            } {actualLtiRatings, -20} {potentialLtiRatings, -25} {totalMti, -7} {actualMtiRatings, -20} {potentialMtiRatings, -25} {totalFai, -5} {actualFaiRatings, -20} {potentialFaiRatings, -23}");
             Console.ResetColor();
         }
     }
