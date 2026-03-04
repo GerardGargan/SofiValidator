@@ -6,6 +6,8 @@ using SofiValidator;
 DotNetEnv.Env.TraversePath().Load();
 var apiUrl = "https://huhtamaki.cs.spheracloud.net/api/rc/flat-table/2127";
 var apiToken = Environment.GetEnvironmentVariable("KEY") ?? throw new Exception("API Key not found");
+var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+var csvFolderPath = Path.Combine(documentsPath, "SofiValidationFiles");
     
 Console.WriteLine("Loading data.. Please wait...");
 var records = await ReadDataFromApi(apiUrl, apiToken);
@@ -30,12 +32,13 @@ var menuItems = new Dictionary<int, MenuItem>
 {
     { 1, new MenuItem("Display TRI Breakdown for current month", PrintTris)},
     { 2, new MenuItem("Display Missing Working Hrs for current month", PrintMissingWorkingHrs)},
-    { 3, new MenuItem("Display LTH Analysis", PrintLtiAndLthMonthly)},
-    { 4, new MenuItem("LTI Information", PrintLtiInformation)},
-    { 5, new MenuItem("MTI Information", PrintMtiInformation)},
-    { 6, new MenuItem("Injury Ratings", PrintInjuryRatings)},
-    { 7, new MenuItem("Clear Console", Console.Clear)},
-    { 8, new MenuItem("Exit", () => Environment.Exit(0))}
+    { 3, new MenuItem("Write missing working hrs to file", () => WriteMissingWorkingHrs($"MissingWorkingHours-{currentMonth:MMM}-{currentMonth.Year}.csv"))},
+    { 4, new MenuItem("Display LTH Analysis", PrintLtiAndLthMonthly)},
+    { 5, new MenuItem("LTI Information", PrintLtiInformation)},
+    { 6, new MenuItem("MTI Information", PrintMtiInformation)},
+    { 7, new MenuItem("Injury Ratings", PrintInjuryRatings)},
+    { 8, new MenuItem("Clear Console", Console.Clear)},
+    { 9, new MenuItem("Exit", () => Environment.Exit(0))},
 };
 
 while (true)
@@ -316,6 +319,48 @@ void PrintInjuryRatings()
             Console.WriteLine($"{siteName, -40} {totalLti, -7
             } {actualLtiRatings, -20} {potentialLtiRatings, -25} {totalMti, -7} {actualMtiRatings, -20} {potentialMtiRatings, -25} {totalFai, -5} {actualFaiRatings, -20} {potentialFaiRatings, -23}");
             Console.ResetColor();
+        }
+    }
+
+    void WriteMissingWorkingHrs(string fileName)
+    {
+        Directory.CreateDirectory(csvFolderPath);
+        var docPath = Path.Combine(csvFolderPath, fileName);
+        
+        var missingHuhtamakiWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.HuhtamakiWorkingHrs & x.Value == 0);
+        var missingContingentWorkingHrsRecords = currentMonthSofiRecords.Where(x => x.PositionId == Position.ContingentWorkingHrs & x.Value == 0);
+
+        var header =
+            $"Site,{MonthKey(prevMonth2).ToShortDateString()},{MonthKey(prevMonth1).ToShortDateString()},Current Month ({MonthKey(currentMonth).ToShortDateString()})";
+
+        using (StreamWriter writer = new StreamWriter(docPath))
+        {
+            writer.WriteLine("Employee Missing Working Hours");
+           writer.WriteLine(header);
+           foreach (var r in missingHuhtamakiWorkingHrsRecords)
+           {
+               bool siteNameFound = siteNameLookup.TryGetValue(r.SiteId, out var siteName);
+               siteName = siteNameFound ? siteName?.Replace(",", "") : "Error";
+               var prevMonth1Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth1));
+               var prevMonth2Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth2));
+               if (prevMonth1Value == 0 && prevMonth2Value == 0) continue;
+               var output = $"{siteName},{prevMonth2Value},{prevMonth1Value},{r.Value}";
+               writer.WriteLine(output);
+           }
+           
+           writer.WriteLine();
+           writer.WriteLine("Contingent Missing Working Hours");
+           writer.WriteLine(header);
+           foreach (var r in missingContingentWorkingHrsRecords)
+           {
+               bool siteNameFound = siteNameLookup.TryGetValue(r.SiteId, out var siteName);
+               siteName = siteNameFound ? siteName?.Replace(",", "") : "Error";
+               var prevMonth1Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth1));
+               var prevMonth2Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth2));
+               if (prevMonth1Value == 0 && prevMonth2Value == 0) continue;
+               var output = $"{siteName},{prevMonth2Value},{prevMonth1Value},{r.Value}";
+               writer.WriteLine(output);
+           }
         }
     }
     
