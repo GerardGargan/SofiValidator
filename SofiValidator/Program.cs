@@ -355,8 +355,8 @@ void PrintInjuryRatings()
            {
                bool siteNameFound = siteNameLookup.TryGetValue(r.SiteId, out var siteName);
                siteName = siteNameFound ? siteName?.Replace(",", "") : "Error";
-               var prevMonth1Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth1));
-               var prevMonth2Value = GetSitePositionValue(r.SiteId, Position.HuhtamakiWorkingHrs, MonthKey(prevMonth2));
+               var prevMonth1Value = GetSitePositionValue(r.SiteId, Position.ContingentWorkingHrs, MonthKey(prevMonth1));
+               var prevMonth2Value = GetSitePositionValue(r.SiteId, Position.ContingentWorkingHrs, MonthKey(prevMonth2));
                if (prevMonth1Value == 0 && prevMonth2Value == 0) continue;
                var output = $"{siteName},{prevMonth2Value},{prevMonth1Value},{r.Value}";
                writer.WriteLine(output);
