@@ -296,7 +296,7 @@ void PrintInjuryRatings()
             siteName = siteNameFound ? siteName : "";
             var totalLti = GetSitePositionValue(siteId, Position.LtiContingent, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.LtiEmployee, MonthKey(currentMonth));
             var totalMti = GetSitePositionValue(siteId, Position.MtiContingent, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.MtiEmployee, MonthKey(currentMonth));
-            var totalFai = GetSitePositionValue(siteId, Position.FaiTotal, MonthKey(currentMonth)) + GetSitePositionValue(siteId, Position.LtiEmployee, MonthKey(currentMonth));
+            var totalFai = GetSitePositionValue(siteId, Position.FaiTotal, MonthKey(currentMonth));
             
             var actualLtiRatings = GetSitePositionValue(siteId, Position.ActualRatingsLti, MonthKey(currentMonth));
             var actualMtiRatings = GetSitePositionValue(siteId, Position.ActualRatingsMti, MonthKey(currentMonth));
